@@ -41,3 +41,13 @@ jobs:
         if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
           cargo test --target ${{ matrix.target }} --verbose
         fi
+
+    - name: Output binary size
+      run: |
+        echo "=== Binary Size ==="
+        if [ -f target/${{ matrix.target }}/debug/actix-test ]; then
+          echo "Debug binary: $(du -sh target/${{ matrix.target }}/debug/actix-test | cut -f1)"
+        fi
+        if [ -f target/${{ matrix.target }}/release/actix-test ]; then
+          echo "Release binary: $(du -sh target/${{ matrix.target }}/release/actix-test | cut -f1)"
+        fi
