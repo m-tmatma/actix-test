@@ -872,6 +872,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "product"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "serde",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
