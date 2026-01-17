@@ -36,6 +36,14 @@ jobs:
           cross build --target ${{ matrix.target }} --verbose
         fi
 
+    - name: Build Release (optimized)
+      run: |
+        if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
+          cargo build --release --target ${{ matrix.target }} --verbose
+        else
+          cross build --release --target ${{ matrix.target }} --verbose
+        fi
+
     - name: Run tests
       run: |
         if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
@@ -44,10 +52,22 @@ jobs:
 
     - name: Output binary size
       run: |
-        echo "=== Binary Size ==="
+        echo "=== Binary Size Comparison ==="
+        echo ""
+        echo "Debug Binary:"
         if [ -f target/${{ matrix.target }}/debug/actix-test ]; then
-          echo "Debug binary: $(du -sh target/${{ matrix.target }}/debug/actix-test | cut -f1)"
+          DEBUG_SIZE=$(stat -c%s target/${{ matrix.target }}/debug/actix-test)
+          echo "  Size: $(numfmt --to=iec-i --suffix=B $DEBUG_SIZE 2>/dev/null || du -sh target/${{ matrix.target }}/debug/actix-test | cut -f1)"
+          file target/${{ matrix.target }}/debug/actix-test
         fi
+        echo ""
+        echo "Release Binary (Optimized for size):"
         if [ -f target/${{ matrix.target }}/release/actix-test ]; then
-          echo "Release binary: $(du -sh target/${{ matrix.target }}/release/actix-test | cut -f1)"
+          RELEASE_SIZE=$(stat -c%s target/${{ matrix.target }}/release/actix-test)
+          echo "  Size: $(numfmt --to=iec-i --suffix=B $RELEASE_SIZE 2>/dev/null || du -sh target/${{ matrix.target }}/release/actix-test | cut -f1)"
+          file target/${{ matrix.target }}/release/actix-test
+          if [ ! -z "$DEBUG_SIZE" ] && [ ! -z "$RELEASE_SIZE" ]; then
+            REDUCTION=$((100 - (RELEASE_SIZE * 100 / DEBUG_SIZE)))
+            echo "  Size reduction: ${REDUCTION}%"
+          fi
         fi
