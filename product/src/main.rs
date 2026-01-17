@@ -81,11 +81,12 @@ async fn main() -> std::io::Result<()> {
     get_products_mut().push(Product { id: 2, name: "Mouse".to_string(), price: 25.00 });
     println!("Starting server");
     HttpServer::new(|| App::new()
-        .route("", web::get().to(get_all_products))
-        .route("", web::post().to(create_product))
-        .route("/{id}", web::get().to(get_product_by_id))
-        .route("/{id}", web::put().to(update_product))
-        .route("/{id}", web::delete().to(delete_product)))
+        .service(web::scope("/products")
+            .route("", web::get().to(get_all_products))
+            .route("", web::post().to(create_product))
+            .route("/{id}", web::get().to(get_product_by_id))
+            .route("/{id}", web::put().to(update_product))
+            .route("/{id}", web::delete().to(delete_product))))
         .bind("127.0.0.1:8080")?
         .run()
         .await
