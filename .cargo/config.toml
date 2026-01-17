@@ -1,9 +1,3 @@
 [build]
 # インクリメンタルコンパイルを無効化（本番ビルド用）
 incremental = false
-
-[profile.release]
-# 追加の最適化フラグ
-rustflags = [
-    "-C", "target-feature=+crt-static",  # C ランタイムのリンク方式
-]
