@@ -1,4 +1,5 @@
-use actix_web::{web, get, App, HttpServer, Responder, HttpResponse};
+use actix_web::{web, get, post, App, HttpServer, Responder, HttpResponse};
+use serde::{Serialize, Deserialize};
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -21,12 +22,39 @@ async fn render_html() -> impl Responder {
         .body("<h1>Hello, HTML!</h1>")
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct User {
+    id: u32,
+    username: String,
+    email: String,
+}
+
+#[get("/users/{id}")]
+async fn get_user_json(id: web::Path<u32>) -> impl Responder {
+    let user_id = id.into_inner();
+    let user = User {
+        id: user_id,
+        username: format!("User{}", user_id),
+        email: format!("user{}@example.com", user_id),
+    };
+
+    HttpResponse::Ok().json(user)
+}
+
+#[post("/users")]
+async fn create_user_json(user: web::Json<User>) -> impl Responder {
+    println!("Received user: {:?}", user);
+    HttpResponse::Created().json(user.into_inner())
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     println!("Starting server");
     HttpServer::new(|| App::new()
         .service(hello)
         .service(render_html)
+        .service(get_user_json)
+        .service(create_user_json)
         .route("/greet/{name}", web::get().to(greet_name))
         .route("/user/{username}/{id}", web::get().to(user_info)))
         .bind("127.0.0.1:8080")?
